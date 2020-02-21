@@ -1,0 +1,30 @@
+{
+  "name": "wwebjs-commander",
+  "version": "1.0.0",
+  "description": "A command framework for whatsapp-web.js",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pedroslopez/commander.git"
+  },
+  "keywords": [
+    "whatsapp-web",
+    "commands",
+    "bot",
+    "commander",
+    "whatsapp-web.js",
+    "whatsapp"
+  ],
+  "author": "Pedro Lopez",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/pedroslopez/commander/issues"
+  },
+  "homepage": "https://github.com/pedroslopez/commander#readme",
+  "peerDependencies": {
+    "whatsapp-web.js": "1.x"
+  }
+}
