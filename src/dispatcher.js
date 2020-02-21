@@ -66,7 +66,7 @@ class CommandDispatcher {
 			const chat = await message.getChat();
 			
 			if(command.groupOnly && !chat.isGroup) {
-				message.reply(`The \`\`\`${command.name}\`\`\` command can only be used in a group chat.`)
+				return message.reply(`The \`\`\`${command.name}\`\`\` command can only be used in a group chat.`)
 			}
 
 			const hasPermission = await command.hasPermission(message);
@@ -76,9 +76,7 @@ class CommandDispatcher {
 			}
 
 			// Args
-			const argsResult = command.obtainArgs(parsed.args);
-			console.log('parsed', parsed.args);
-			console.log('argsRes', argsResult);
+			const argsResult = await command.obtainArgs(message, parsed.args);
 			if(argsResult.error) {
 				return message.reply('Invalid arguments provided.'); //fixme make this message better
 			}
@@ -105,7 +103,6 @@ class CommandDispatcher {
 	 */
 	buildCommandPattern(prefix) {
 		const myNumber = this.commander.client.info.user;
-		console.log('INFO, BULD PATTERN', this.commander.info);
 		let pattern;
 		if(prefix) {
 			const escapedPrefix = escapeRegex(prefix);

@@ -2,6 +2,8 @@ const Argument = require('./argument');
 
 class Command {
     constructor(commander, info) {
+		this.constructor.validateInfo(commander, info);
+
         /**
 		 * Client this command is for
 		 * @type {string}
@@ -28,24 +30,6 @@ class Command {
 		}
 
 		/**
-		 * ID of the group the command belongs to
-		 * @type {string}
-		 */
-		this.groupID = info.group;
-
-		/**
-		 * The group the command belongs to, assigned upon registration
-		 * @type {?CommandGroup}
-		 */
-		this.group = null;
-
-		/**
-		 * Name of the command within the group
-		 * @type {string}
-		 */
-		this.memberName = info.memberName;
-
-		/**
 		 * Short description of the command
 		 * @type {string}
 		 */
@@ -56,12 +40,6 @@ class Command {
 		 * @type {string}
 		 */
 		this.format = info.format || null;
-
-		/**
-		 * Long description of the command
-		 * @type {?string}
-		 */
-		this.details = info.details || null;
 
 		/**
 		 * Whether the command can only be run in a group chat
@@ -88,22 +66,10 @@ class Command {
 		this.adminOnly = Boolean(info.adminOnly) || null;
 
 		/**
-		 * Whether the command is protected from being disabled
-		 * @type {boolean}
-		 */
-		this.guarded = Boolean(info.guarded);
-
-		/**
 		 * Whether the command should be hidden from the help command
 		 * @type {boolean}
 		 */
 		this.hidden = Boolean(info.hidden);
-
-		/**
-		 * Whether the command will be run when an unknown command is used
-		 * @type {boolean}
-		 */
-		this.unknown = Boolean(info.unknown);
 
 		/**
 		 * Whether the command is enabled globally
@@ -128,6 +94,14 @@ class Command {
 				this.args[i] = new Argument(this.commander, info.args[i]);
 				if(this.args[i].infinite) hasInfinite = true;
 			}
+		}
+
+		if(info.args && typeof info.format === 'undefined') {
+			this.format = this.args.reduce((prev, arg) => {
+				const wrapL = arg.default !== null ? '[' : '<';
+				const wrapR = arg.default !== null ? ']' : '>';
+				return `${prev}${prev ? ' ' : ''}${wrapL}${arg.label}${arg.infinite ? '...' : ''}${wrapR}`;
+			}, '');
 		}
 		
     }
@@ -171,14 +145,17 @@ class Command {
 		throw new Error(`${this.constructor.name} doesn't have a run() method.`);
 	}
 
-	obtainArgs(provided = []) {
+	async obtainArgs(message, provided = []) {
 		const values = {};
 
 		for(let i=0; i<this.args.length; i++) {
 			const arg = this.args[i];
 
 			let result = arg.infinite ? provided.slice(i) : provided[i];
-			if(!arg.optional && (arg.infinite && result.length === 0) || typeof provided[i] === 'undefined') {
+			const empty = (arg.infinite && result.length === 0) || typeof provided[i] === 'undefined';
+			if(empty && this.default !== null) {
+				result = typeof this.default === 'function' ? await this.default(message, this) : this.default; 
+			} else if(empty) {
 				return {values, error: true} 
 			}
 
@@ -216,79 +193,20 @@ class Command {
 	}
     
     /**
-	 * Called when the command is prevented from running
-	 * @param {CommandMessage} message - Command message that the command is running from
-	 * @param {string} reason - Reason that the command was blocked
-	 * (built-in reasons are `groupOnly`, `permission`, and `clientPermission`)
-	 * @param {Object} [data] - Additional data associated with the block. Built-in reason data properties:
-	 * - groupOnly: none
-	 * - permission: `response` ({@link string}) to send
-	 * - throttling: `throttle` ({@link Object}), `remaining` ({@link number}) time in seconds
-	 * - clientPermission: none
-	 * @returns {Promise<?Message|?Array<Message>>}
-	 */
-	onBlock(message, reason, data) {
-		switch(reason) {
-			case 'groupOnly':
-				return message.reply(`The \`\`\`${this.name}\`\`\` command must be used in a server channel.`);
-			case 'permission': {
-				if(data.response) return message.reply(data.response);
-				return message.reply(`You do not have permission to use the \`\`\`${this.name}\`\`\` command.`);
-			}
-			case 'clientPermission': {
-				return message.reply(
-                    `I need to be a group admin for the \`\`\`${this.name}\`\`\` command to work.`
-                );
-			}
-			// case 'throttling': {
-			// 	return message.reply(
-			// 		`You may not use the \`${this.name}\` command again for another ${data.remaining.toFixed(1)} seconds.`
-			// 	);
-			// }
-			default:
-				return null;
-		}
-    }
-    
-    /**
-	 * Called when the command produces an error while running
-	 * @param {Error} err - Error that was thrown
-	 * @param {CommandMessage} message - Command message that the command is running from (see {@link Command#run})
-	 * @param {Object|string|string[]} args - Arguments for the command (see {@link Command#run})
-	 * @param {boolean} fromPattern - Whether the args are pattern matches (see {@link Command#run})
-	 * @param {?ArgumentCollectorResult} result - Result from obtaining the arguments from the collector
-	 * (if applicable - see {@link Command#run})
-	 * @returns {Promise<?Message|?Array<Message>>}
-	 */
-	onError(err, message, args, fromPattern, result) { 
-		return message.reply(stripIndents`
-			An error occurred while running the command`);
-    }
-    
-    /**
 	 * Creates a usage string for the command
 	 * @param {string} [argString] - A string of arguments for the command
-	 * @param {string} [prefix=this.commander.commandPrefix] - Prefix to use for the prefixed command format
+	 * @param {string} [prefix=this.commander._commandPrefix] - Prefix to use for the prefixed command format
 	 * @return {string}
 	 */
-	usage(argString, prefix = this.commander.commandPrefix) {
-		return this.constructor.usage(`${this.name}${argString ? ` ${argString}` : ''}`, prefix, user);
-    }
-    
-    /**
-	 * Creates a usage string for a command
-	 * @param {string} command - A command + arg string
-	 * @param {string} [prefix] - Prefix to use for the prefixed command format
-	 * @return {string}
-	 */
-	static usage(command, prefix = null) {
-		const nbcmd = command.replace(/ /g, '\xa0');
-		if(!prefix) return `\`\`\`${nbcmd}\`\`\``;
+	usage(argString, prefix = this.commander._commandPrefix) {
+		let format = argString ? ` ${argString}` : (this.format ? ` ${this.format}` : '');
+		let cmdUsg = `${this.name}${format}`;
+		
+		if(!prefix) return `\`\`\`${cmdUsg}\`\`\``;
 
         if(prefix.length > 1 && !prefix.endsWith(' ')) prefix += ' ';
-        prefix = prefix.replace(/ /g, '\xa0');
-        return `\`\`\`${prefix}${nbcmd}\`\`\``;
-	}
+        return `\`\`\`${prefix}${cmdUsg}\`\`\``;
+    }
 
     /**
 	 * Validates the constructor parameters
@@ -307,16 +225,8 @@ class Command {
 		if(info.aliases && info.aliases.some(ali => ali !== ali.toLowerCase())) {
 			throw new RangeError('Command aliases must be lowercase.');
 		}
-		// if(typeof info.group !== 'string') throw new TypeError('Command group must be a string.');
-		// if(info.group !== info.group.toLowerCase()) throw new RangeError('Command group must be lowercase.');
-		// if(typeof info.memberName !== 'string') throw new TypeError('Command memberName must be a string.');
-		// if(info.memberName !== info.memberName.toLowerCase()) throw new Error('Command memberName must be lowercase.');
 		if(typeof info.description !== 'string') throw new TypeError('Command description must be a string.');
 		if('format' in info && typeof info.format !== 'string') throw new TypeError('Command format must be a string.');
-		if('details' in info && typeof info.details !== 'string') throw new TypeError('Command details must be a string.');
-		if(info.examples && (!Array.isArray(info.examples) || info.examples.some(ex => typeof ex !== 'string'))) {
-			throw new TypeError('Command examples must be an Array of strings.');
-		}
 		if(info.args && !Array.isArray(info.args)) throw new TypeError('Command args must be an Array.');
 	}
 }

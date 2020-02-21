@@ -26,5 +26,8 @@
   "homepage": "https://github.com/pedroslopez/commander#readme",
   "peerDependencies": {
     "whatsapp-web.js": "1.x"
+  },
+  "dependencies": {
+    "require-all": "^3.0.0"
   }
 }

@@ -33,63 +33,6 @@ class CommandRegistry {
 		 * @type {?string}
 		 */
 		this.commandsPath = null;
-
-		/**
-		 * Command to run when an unknown command is used
-		 * @type {?Command}
-		 */
-		this.unknownCommand = null;
-    }
-
-    /**
-	 * Registers a single group
-	 * @param {CommandGroup|Function|Object|string} group - A CommandGroup instance, a constructor, or the group ID
-	 * @param {string} [name] - Name for the group (if the first argument is the group ID)
-	 * @param {boolean} [guarded] - Whether the group should be guarded (if the first argument is the group ID)
-	 * @return {CommandRegistry}
-	 * @see {@link CommandRegistry#registerGroups}
-	 */
-	registerGroup(group, name, guarded) {
-		if(typeof group === 'string') {
-			group = new CommandGroup(this.commander, group, name, guarded);
-		} else if(typeof group === 'object' && !(group instanceof CommandGroup)) {
-			group = new CommandGroup(this.commander, group.id, group.name, group.guarded);
-		}
-
-		const existing = this.groups.get(group.id);
-		if(existing) {
-			existing.name = group.name;
-		} else {
-			this.groups.set(group.id, group);
-		}
-
-		return this;
-	}
-
-	/**
-	 * Registers multiple groups
-	 * @param {CommandGroup[]|Function[]|Object[]|Array<string[]>} groups - An array of CommandGroup instances,
-	 * constructors, plain objects (with ID, name, and guarded properties),
-	 * or arrays of {@link CommandoRegistry#registerGroup} parameters
-	 * @return {CommandoRegistry}
-	 * @example
-	 * registry.registerGroups([
-	 * 	['fun', 'Fun'],
-	 * 	['mod', 'Moderation']
-	 * ]);
-	 * @example
-	 * registry.registerGroups([
-	 * 	{ id: 'fun', name: 'Fun' },
-	 * 	{ id: 'mod', name: 'Moderation' }
-	 * ]);
-	 */
-	registerGroups(groups) {
-		if(!Array.isArray(groups)) throw new TypeError('Groups must be an Array.');
-		for(const group of groups) {
-			if(Array.isArray(group)) this.registerGroup(...group);
-			else this.registerGroup(group);
-		}
-		return this;
     }
 
     _checkExisting(nameOrAlias) {
@@ -125,22 +68,8 @@ class CommandRegistry {
             }
         }
         
-		// const group = this.groups.get(command.groupID);
-        // if(!group) throw new Error(`Group "${command.groupID}" is not registered.`);
-        // for(const [_, cmd] of group.commands) {
-        //     if(cmd.memberName === command.memberName) {
-        //         throw new Error(`A command with the member name "${command.memberName}" is already registered in ${group.id}`);
-        //     }
-        // }
-        
-		if(command.unknown && this.unknownCommand) throw new Error('An unknown command is already registered.');
-
 		// Add the command
-		// command.group = group;
-		// group.commands.set(command.name, command);
 		this.commands.set(command.name, command);
-		if(command.unknown) this.unknownCommand = command;
-
 
 		return this;
 	}
@@ -161,6 +90,37 @@ class CommandRegistry {
 			}
 			this.registerCommand(command);
 		}
+		return this;
+	}
+
+	/**
+	 * Registers all commands in a directory. The files must export a Command class constructor or instance.
+	 * @param {string|RequireAllOptions} options - The path to the directory, or a require-all options object
+	 * @return {CommandRegistry}
+	 */
+	registerCommandsIn(options) {
+		const obj = require('require-all')(options);
+		const commands = [];
+		for(const group of Object.values(obj)) {
+			for(let command of Object.values(group)) {
+				if(typeof command.default === 'function') command = command.default;
+				commands.push(command);
+			}
+		}
+
+		return this.registerCommands(commands);
+	}
+
+	/**
+	 * Registers the default commands to the registry
+	 * @param {Object} [options] - Object specifying what commands to register
+	 * @param {boolean} [options.help=true] - Whether or not to register the built-in help command
+	 * @param {boolean} [options.ping=true] - Whether or not to register the built-in ping command
+	 * @return {CommandRegistry}
+	 */
+	registerDefaultCommands({ help = true, ping = true } = {}) {
+		if(help) this.registerCommand(require('./commands/util/help'));
+		if(ping) this.registerCommand(require('./commands/util/ping'));
 		return this;
 	}
 

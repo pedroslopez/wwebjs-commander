@@ -15,22 +15,16 @@ class Argument {
 		this.label = info.label || info.key;
 
 		/**
-		 * Optional
-		 * @type {boolean}
+		 * The default value for the argument
+		 * @type {?ArgumentDefault}
 		 */
-		this.optional = Boolean(info.optional);
+		this.default = typeof info.default !== 'undefined' ? info.default : null;
 
 		/**
 		 * Whether the argument accepts an infinite number of values
 		 * @type {boolean}
 		 */
 		this.infinite = Boolean(info.infinite);
-
-		/**
-		 * Error message for when a value is invalid
-		 * @type {?string}
-		 */
-		this.error = info.error || null;
 	}
 	
 	/**
@@ -44,7 +38,6 @@ class Argument {
 		if(typeof info !== 'object') throw new TypeError('Argument info must be an Object.');
 		if(typeof info.key !== 'string') throw new TypeError('Argument key must be a string.');
 		if(info.label && typeof info.label !== 'string') throw new TypeError('Argument label must be a string.');
-		if(info.error && typeof info.error !== 'string') throw new TypeError('Argument error must be a string.');
 	}
 }
 
