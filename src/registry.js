@@ -103,7 +103,7 @@ class CommandRegistry {
 		const commands = [];
 		for(let command of Object.values(obj)) {
 			if(typeof command.default === 'function') command = command.default;
-			commands.push(command);
+			if(typeof command === 'function') commands.push(command);
 		}
 
 		return this.registerCommands(commands);
