@@ -1,13 +1,13 @@
-// const WWebJS = require('whatsapp-web.js');
+const WWebJS = require('whatsapp-web.js');
 
 const CommandRegistry = require('./registry');
 const CommandDispatcher = require('./dispatcher');
 
 class CommanderClient {
     constructor(client, options = {}) {
-        // if(!(client instanceof WWebJS.Client)) {
-        //     throw Error('Client must be a whatsapp-web.js client');
-        // }
+        if(!(client instanceof WWebJS.Client)) {
+            throw Error('Client must be a whatsapp-web.js client');
+        }
 
         this.client = client;
 
