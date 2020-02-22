@@ -5,7 +5,6 @@ class PingCommand extends Command {
         super(commander, {
             name: 'ping',
             aliases: ['check'],
-            groupOnly: true,
             description: 'Checks if the bot is online'
         })
     }
