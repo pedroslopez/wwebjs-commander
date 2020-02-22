@@ -27,7 +27,7 @@ class CommanderClient {
 
     isOwner(userId) {
         if(!this._options.owner) return false;
-        if(!this.userId) throw 'Invalid userId';
+        if(!userId) throw 'Invalid userId';
         if(typeof this._options.owner === 'string') return userId === this._options.owner;
         if(this._options.owner instanceof Array) return this._options.owner.includes(userId);
         if(this._options.owner instanceof Set) return this._options.owner.has(userId);
