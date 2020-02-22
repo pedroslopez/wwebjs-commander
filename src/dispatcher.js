@@ -102,7 +102,7 @@ class CommandDispatcher {
 	 * @private
 	 */
 	buildCommandPattern(prefix) {
-		const myNumber = this.commander.client.info.user;
+		const myNumber = this.commander.client.info.me.user;
 		let pattern;
 		if(prefix) {
 			const escapedPrefix = escapeRegex(prefix);
