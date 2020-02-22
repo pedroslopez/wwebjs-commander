@@ -57,16 +57,19 @@ class CommandDispatcher {
 	 * @private
 	 */
 	async handleMessage(message) {
-		console.log(this);
 		const parsed = this.parseMessage(message);
 		if(parsed && parsed.command) {
 			const command = parsed.command;
 
 			// Validations
 			const chat = await message.getChat();
+
+			if(command.replyOnly && !message.hasQuotedMsg) {
+				return message.reply(`The \`\`\`${command.name}\`\`\` command can only be used when replying to another message.`);
+			}
 			
 			if(command.groupOnly && !chat.isGroup) {
-				return message.reply(`The \`\`\`${command.name}\`\`\` command can only be used in a group chat.`)
+				return message.reply(`The \`\`\`${command.name}\`\`\` command can only be used in a group chat.`);
 			}
 
 			const hasPermission = await command.hasPermission(message);

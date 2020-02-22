@@ -42,6 +42,12 @@ class Command {
 		this.format = info.format || null;
 
 		/**
+		 * Whether the command can only be used while replying to another message
+		 * @type {boolean}
+		 */
+		this.replyOnly = Boolean(info.replyOnly);
+
+		/**
 		 * Whether the command can only be run in a group chat
 		 * @type {boolean}
 		 */
