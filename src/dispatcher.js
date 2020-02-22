@@ -85,10 +85,10 @@ class CommandDispatcher {
 
 			// Run command
 			try {
-				command.run(message, args);
+				await command.run(message, args);
 			} catch(error) {
 				console.error(error);
-				msg.reply('There was an error trying to execute the command!');
+				message.reply('🔥 An error occurred while trying to execute the command!');
 			}
 
 		}
