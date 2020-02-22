@@ -153,8 +153,8 @@ class Command {
 
 			let result = arg.infinite ? provided.slice(i) : provided[i];
 			const empty = (arg.infinite && result.length === 0) || typeof provided[i] === 'undefined';
-			if(empty && this.default !== null) {
-				result = typeof this.default === 'function' ? await this.default(message, this) : this.default; 
+			if(empty && arg.default !== null) {
+				result = typeof arg.default === 'function' ? await arg.default(message, this) : arg.default; 
 			} else if(empty) {
 				return {values, error: true} 
 			}
