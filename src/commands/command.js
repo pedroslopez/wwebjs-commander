@@ -173,7 +173,7 @@ class Command {
 	 */
 	parseArgs(argString) {
 		argString = argString.trim();
-		let argCount = this.args[this.args.length - 1].infinite ? Infinity : this.args.length;
+		let argCount = this.args.length > 0 && this.args[this.args.length - 1].infinite ? Infinity : this.args.length;
 
 		const re = /\s*(?:("|“)([^]*?)(\1|”)|(\S+))\s*/g;
 		const result = [];
