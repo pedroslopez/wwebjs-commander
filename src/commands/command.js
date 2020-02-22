@@ -122,7 +122,14 @@ class Command {
 		}
 
 		if(this.adminOnly) {
-            return "I can't check if the user is an admin yet.";
+			let chat = await message.getChat();
+			if (chat.isGroup) {
+				for(let participant of chat.participants) {
+					if(participant.id._serialized === authorId && !participant.isAdmin) {
+						return `The \`\`\`${this.name}\`\`\` command can only be used by group admins.`;
+					}
+				}
+			}
 		}
 
 		return true;
