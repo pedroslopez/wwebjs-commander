@@ -101,11 +101,9 @@ class CommandRegistry {
 	registerCommandsIn(options) {
 		const obj = require('require-all')(options);
 		const commands = [];
-		for(const group of Object.values(obj)) {
-			for(let command of Object.values(group)) {
-				if(typeof command.default === 'function') command = command.default;
-				commands.push(command);
-			}
+		for(let command of Object.values(obj)) {
+			if(typeof command.default === 'function') command = command.default;
+			commands.push(command);
 		}
 
 		return this.registerCommands(commands);
