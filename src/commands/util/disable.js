@@ -5,6 +5,7 @@ class DisableCommandCommand extends Command {
 		super(client, {
             name: 'disable-command',
             aliases: ['disable', 'cmd-off', 'command-off'],
+            hidden: true,
             ownerOnly: true,
             guarded: true,
 			description: 'Disables a command globally.',

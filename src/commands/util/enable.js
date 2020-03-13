@@ -5,6 +5,7 @@ class EnableCommandCommand extends Command {
 		super(client, {
             name: 'enable-command',
             aliases: ['enable', 'cmd-on', 'command-on'],
+            hidden: true,
             ownerOnly: true,
             guarded: true,
 			description: 'Enables a command globally.',
