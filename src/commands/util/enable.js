@@ -21,11 +21,11 @@ class EnableCommandCommand extends Command {
 	async run(message, { commandName }) { 
         const command = this.commander.registry.findCommand(commandName);
         if(command) {
-            if(command._globalEnabled) return message.reply(`The \`\`\`${commandName}\`\`\` command is already enabled.`);
-            if(command.guarded) return message.reply(`You cannot enable the \`\`\`${commandName}\`\`\` command.`); 
+            if(command._globalEnabled) return message.reply(`The \`\`\`${command.name}\`\`\` command is already enabled.`);
+            if(command.guarded) return message.reply(`You cannot enable the \`\`\`${command.name}\`\`\` command.`); 
             
             command._globalEnabled = true;
-            message.reply(`The \`\`\`${commandName}\`\`\` has been enabled.`);
+            message.reply(`The \`\`\`${command.name}\`\`\` command has been enabled.`);
         } else {
             return message.reply('That\'s not a valid command!');
         }
