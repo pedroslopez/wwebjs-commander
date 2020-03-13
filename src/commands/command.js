@@ -78,6 +78,12 @@ class Command {
 		this.hidden = Boolean(info.hidden);
 
 		/**
+		 * Whether the command is protected from being disabled
+		 * @type {boolean}
+		 */
+		this.guarded = Boolean(info.guarded);
+
+		/**
 		 * Whether the command is enabled globally
 		 * @type {boolean}
 		 * @private

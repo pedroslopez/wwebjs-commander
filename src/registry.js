@@ -114,11 +114,18 @@ class CommandRegistry {
 	 * @param {Object} [options] - Object specifying what commands to register
 	 * @param {boolean} [options.help=true] - Whether or not to register the built-in help command
 	 * @param {boolean} [options.ping=true] - Whether or not to register the built-in ping command
+	 * @param {boolean} [options.commandState=true] - Whether or not to register the built-in enable/disable command commands
 	 * @return {CommandRegistry}
 	 */
-	registerDefaultCommands({ help = true, ping = true } = {}) {
+	registerDefaultCommands({ help = true, ping = true, commandState = true } = {}) {
 		if(help) this.registerCommand(require('./commands/util/help'));
 		if(ping) this.registerCommand(require('./commands/util/ping'));
+		if(commandState) {
+			this.registerCommands([
+				require('./commands/util/disable'),
+				require('./commands/util/enable')
+			]);
+		}
 		return this;
 	}
 
