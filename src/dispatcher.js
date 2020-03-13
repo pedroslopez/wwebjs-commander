@@ -64,6 +64,10 @@ class CommandDispatcher {
 			// Validations
 			const chat = await message.getChat();
 
+			if(!command._globalEnabled) {
+				return message.reply(`The \`\`\`${command.name}\`\`\` command has been temporarily disabled.`);
+			}
+
 			if(command.replyOnly && !message.hasQuotedMsg) {
 				return message.reply(`The \`\`\`${command.name}\`\`\` command can only be used when replying to another message.`);
 			}
@@ -81,7 +85,7 @@ class CommandDispatcher {
 			// Args
 			const argsResult = await command.obtainArgs(message, parsed.args);
 			if(argsResult.error) {
-				return message.reply('Invalid arguments provided.'); //fixme make this message better
+				return message.reply(`Invalid arguments provided. You can run \`\`\`!help ${command.name}\`\`\` to get more info.`);
 			}
 
 			const args = argsResult.values;
