@@ -54,8 +54,8 @@ class CommandRegistry {
 	 * @see {@link CommandoRegistry#registerCommands}
 	 */
 	registerCommand(command) {
-		if(isConstructor(command, Command)) command = new command(this.client);
-		else if(isConstructor(command.default, Command)) command = new command.default(this.client);
+		if(isConstructor(command, Command)) command = new command(this.commander);
+		else if(isConstructor(command.default, Command)) command = new command.default(this.commander);
 		if(!(command instanceof Command)) throw new Error(`Invalid command object to register: ${command}`);
 
 		// Make sure there aren't any conflicts
