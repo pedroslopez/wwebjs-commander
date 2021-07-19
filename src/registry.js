@@ -1,6 +1,8 @@
 const Command = require('./commands/command');
 const CommandGroup = require('./commands/group');
 
+const { isConstructor } = require('./util');
+
 class CommandRegistry {
     constructor(commander) {
         /**
@@ -52,15 +54,14 @@ class CommandRegistry {
 	 * @see {@link CommandoRegistry#registerCommands}
 	 */
 	registerCommand(command) {
-		if(typeof command === 'function') command = new command(this.commander);
-		else if(typeof command.default === 'function') command = new command.default(this.commander);
-
+		if(isConstructor(command, Command)) command = new command(this.client);
+		else if(isConstructor(command.default, Command)) command = new command.default(this.client);
 		if(!(command instanceof Command)) throw new Error(`Invalid command object to register: ${command}`);
 
-        // Make sure there aren't any conflicts
-        if(this._checkExisting(command.name)) {
-            throw new Error(`A command with the name/alias "${command.name}" is already registered.`);
-        }
+		// Make sure there aren't any conflicts
+		if(this._checkExisting(command.name)) {
+				throw new Error(`A command with the name/alias "${command.name}" is already registered.`);
+		}
         
 		for(const alias of command.aliases) {
             if(this._checkExisting(alias)) {
@@ -83,7 +84,7 @@ class CommandRegistry {
 	registerCommands(commands, ignoreInvalid = false) {
 		if(!Array.isArray(commands)) throw new TypeError('Commands must be an Array.');
 		for(const command of commands) {
-			const valid = typeof command === 'function' || typeof command.default === 'function' ||
+			const valid = isConstructor(command, Command) || isConstructor(command.default, Command) ||
 				command instanceof Command || command.default instanceof Command;
 			if(ignoreInvalid && !valid) {
 				continue;
@@ -106,7 +107,7 @@ class CommandRegistry {
 			if(typeof command === 'function') commands.push(command);
 		}
 
-		return this.registerCommands(commands);
+		return this.registerCommands(commands, true);
 	}
 
 	/**
